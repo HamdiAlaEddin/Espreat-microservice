@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-eureka-gateway-public
+   
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-eureka-gateway-public
+  template:
+    metadata:
+      labels:
+        app: frontend-eureka-gateway-public
+    spec:
+      containers:
+        - name: frontend
+          # image: fatnassihnifinassim353/espreat:1.0.0
+          image: fatnassihnifinassim353/front-azure:0.0.1
+          ports:
+            - containerPort: 80
+              name: frontend
+
+        - name: eureka
+          image: fatnassihnifinassim353/eurekaimage:0.0.2
+          ports:
+            - containerPort: 8099
+              name: eureka
+        - name: api-gateway
+          image: fatnassihnifinassim353/gateway:0.0.4
+          ports:
+            - containerPort: 9090
+              name: api-gateway
+        - name: mysql
+          image: mysql:latest
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "root"
+          ports:
+            - containerPort: 3306
+              name: mysql
+---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: frontend-eureka-gateway-public-service
+# spec:
+#   selector:
+#     app: frontend-eureka-gateway-public
+#   ports:
+#     - protocol: TCP
+#       port: 80
+#       targetPort: 80
+#       name: front
+#   type: LoadBalancer
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-eureka-gateway-public-service
+spec:
+  selector:
+    app: frontend-eureka-gateway
+  ports:
+    - protocol: TCP
+      port: 8099
+      targetPort: 8099
+      name: eureka
+    - protocol: TCP
+      port: 9090
+      targetPort: 9090
+      name: gateway
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      name: front
+  type: LoadBalancer
